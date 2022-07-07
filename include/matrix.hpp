@@ -9,7 +9,7 @@ namespace tomy807 {
       int rows_;
       int cols_;
       int elements_size;
-      std::shared_ptr<T> data_;
+      std::shared_ptr<T[]> data_;
 
     public:
       Matrix() = default;
