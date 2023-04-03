@@ -2,7 +2,7 @@
 #define MATRIX_H
 #include <vector>
 #include <memory>
-namespace tomy807 {
+namespace BaseType {
   template <typename T>
   class Matrix {
     private:
@@ -85,5 +85,5 @@ namespace tomy807 {
   template <class T> int Matrix<T>::get_element_size() const { return elements_size; }
   
 
-} // namespace tomy807
+} // namespace BaseType
 #endif
