@@ -1,17 +1,48 @@
 #ifndef TEST_MATRIX_H
 #define TEST_MATRIX_H
 #include <vector>
+#include <iostream>
+#include <cassert>
+#include "../Decompose/Decompose.hpp"
 
-
+template<typename T>
+class Decompose;
 
 template<typename T>
 class Matrix {
 public:
     // 생성자
+    Matrix(){}
     Matrix(int r, int c) : m_rows(r), m_cols(c), m_data(r * c) {}
 
     // 복사 생성자
     Matrix(const Matrix& other) : m_rows(other.m_rows), m_cols(other.m_cols), m_data(other.m_data) {}
+
+    // 이동 생성자
+    Matrix(Matrix&& other) noexcept {
+        m_rows = other.m_rows;
+        m_cols = other.m_cols;
+        m_data = std::move(other.m_data);
+    }
+
+    // List constructor
+    Matrix(std::initializer_list<std::initializer_list<T>> list) {
+        m_rows = list.size();
+        m_cols = list.begin()->size();
+        m_data.resize(m_rows*m_cols);
+
+        int i, j;
+        i = j = 0;
+        for(auto outer : list) {
+            if(outer.size() != m_cols)
+                throw std::invalid_argument("Invalid matrix definition");
+            for(auto inner : outer) {
+                m_data[i*m_cols+j++] = inner;
+            }
+            j = 0;
+            i++;
+        }
+    }
 
     // 대입 연산자
     Matrix& operator=(const Matrix& other) {
@@ -20,6 +51,16 @@ public:
         m_data = other.m_data;
         return *this;
     }
+    // 이동 연산자
+    Matrix& operator=(Matrix&& other) noexcept {
+        if(this != &other) {
+            m_rows = other.m_rows;
+            m_cols = other.m_cols;
+            m_data = std::move(other.m_data);
+        }
+        return *this;
+    }
+
 
     // 소멸자
     ~Matrix() {}
@@ -43,6 +84,7 @@ public:
         }
         return result;
     }
+    
 
     // 뺄셈 연산자
     Matrix operator-(const Matrix& other) const {
@@ -67,6 +109,38 @@ public:
                     sum += (*this)(i, k) * other(k, j);
                 }
                 result(i, j) = sum;
+            }
+        }
+        return result;
+    }
+
+
+    // Scalar Add
+    Matrix operator+(const T& scalar) const {
+        Matrix result(m_rows, m_cols);
+        for (int i = 0; i < m_rows; i++) {
+            for (int j = 0; j < m_cols; j++) {
+                result(i, j) = (*this)(i, j) + scalar;
+            }
+        }
+        return result;
+    }
+    // Scalar Sub
+    Matrix operator-(const T& scalar) const {
+        Matrix result(m_rows, m_cols);
+        for (int i = 0; i < m_rows; i++) {
+            for (int j = 0; j < m_cols; j++) {
+                result(i, j) = (*this)(i, j) - scalar;
+            }
+        }
+        return result;
+    }
+    // Scalar Mul
+    Matrix operator*(const T& scalar) const {
+        Matrix result(m_rows, m_cols);
+        for (int i = 0; i < m_rows; i++) {
+            for (int j = 0; j < m_cols; j++) {
+                result(i, j) = (*this)(i, j) * scalar;
             }
         }
         return result;
@@ -118,8 +192,10 @@ public:
         const int n = m_rows;
 
         // LU 분해를 수행한다.
-        Matrix L, U;
-        decomposeLU(L, U);
+        Matrix<T> L, U;
+        Matrix<T> result(*this);
+        // decomposeLU(L, U);
+        Decompose<T>::decomposeLU2(result,L, U);
 
         // U^-1과 L^-1을 계산한다.
         Matrix Uinv(n, n);
@@ -149,6 +225,54 @@ public:
         Matrix Ainv(n, n);
         Ainv = Uinv * Linv;
         return Ainv;
+    }
+
+    double determinant() {
+
+        assert(m_rows== m_cols);
+        const int n = m_rows;
+
+        Matrix B = *this;  // 가우스 소거법을 수행할 복사본
+        double det = 1;  // 행렬식의 초기값
+        int sign = 1;  // 행 교환의 부호
+        // 가우스 소거법으로 삼각행렬을 만든다
+        for (int i = 0; i < n; i++) {
+            // 행 교환
+            if (B(i, i) == 0) {
+                int k;
+                for (k = i + 1; k < n; k++) {
+                    if (B(k, i) != 0) {
+                        break;
+                    }
+                }
+                if (k == n) {  // 모든 원소가 0인 경우
+                    return 0;
+                }
+                for (int j = i; j < n; j++) {
+                    std::swap(B(i, j), B(k, j));
+                }
+                sign *= -1;
+            }
+            // 대각선 원소를 1로 만들기
+            det *= B(i, i);
+            for (int j = i + 1; j < n; j++) {
+                double factor = B(j, i) / B(i, i);
+                for (int k = i; k < n; k++) {
+                    B(j, k) -= factor * B(i, k);
+                }
+            }
+        }
+    // 행렬식 계산
+        return sign * det;
+    }
+
+    void print() {
+            for(int i = 0; i < m_rows; i++) {
+                for(int j = 0; j < m_cols; j++) {
+                    std::cout << m_data[i*m_cols + j] << " ";
+                }
+                std::cout << "\n";
+            }
     }
     private:
         int m_rows; // 행의 개수
