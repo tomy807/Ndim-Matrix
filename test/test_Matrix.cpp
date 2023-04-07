@@ -59,8 +59,14 @@ TEST(Matrix,Constructor_List_Dynamic) {
     EXPECT_THROW((MatrixXi({{2, 3},{5, 6, 7}})) , std::invalid_argument);
 }
 
-TEST(Matrix,Comma_Init){
+TEST(Matrix,Comma_Cin){
     Matrix3i a;
     a <<1,2,3,4,5,6,7,8,9,10;
     a.print();
+}
+
+TEST(Matrix,Cout){
+    Matrix3i a;
+    a <<1,2,3,4,5,6,7,8,9;
+    std::cout << a;
 }

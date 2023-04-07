@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace internal {
     template<typename _Scalar, int _Rows, int _Cols>
@@ -70,7 +71,6 @@ namespace internal {
             }
         }
 
-
         Matrix(const Matrix& other) {
             for (int i = 0; i < _Rows * _Cols; ++i)
                 data[i] = other.data[i];
@@ -91,6 +91,25 @@ namespace internal {
             return Loader(*this,1);
         }
 
+        friend std::ostream& operator<<(std::ostream& os, const Matrix& m){
+            int rows = m.rows();
+            int cols = m.cols();
+            if(rows==-1){
+                for(int j = 0; j < cols; j++) {
+                    os << m.data[j] << " ";
+                }
+                os << "\n";
+            }else{
+                for(int i = 0; i < rows; i++) {
+                    for(int j = 0; j < cols; j++) {
+                        os << m.data[i*cols + j] << " ";
+                    }
+                    os << "\n";
+                }
+            }
+            return os;
+        }
+
         void print() const {
             if(data_rows==-1){
                 for(int j = 0; j < data_cols; j++) {
@@ -108,8 +127,7 @@ namespace internal {
         }
 
         bool isDynamic(int rows,int cols) const { 
-            if(rows==-1 && cols==-1) 
-            {
+            if(rows==-1 && cols==-1) {
                 return true;
             }
             return false;
@@ -145,7 +163,7 @@ namespace internal {
         int data_cols=-1;
         int data_rows=-1;
     };
-    const int Dynamic = -1;
+const int Dynamic = -1;
 
 #define EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \
     typedef Matrix<Type, Size, Size> Matrix##SizeSuffix##TypeSuffix; \
