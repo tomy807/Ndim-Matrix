@@ -9,6 +9,15 @@ namespace internal {
     template<typename _Scalar, int _Rows, int _Cols>
     class Matrix {
     public:
+        struct Loader{
+            Matrix& m;
+            int i;
+            Loader(Matrix& m, int i) : m(m), i(i) {}
+            Loader operator , (_Scalar x) {
+                m.data[i] = x;
+                return Loader(m, i+1);
+            }
+        };
         // if Fixed: Assigned But Dynamic: Not Assigned
         Matrix() {
             if(!isDynamic(_Rows, _Cols)){
@@ -74,6 +83,14 @@ namespace internal {
         };
         ~Matrix() {};
 
+        Loader operator<<(_Scalar value) {
+            if(isDynamic(_Rows,_Cols)){
+                throw std::invalid_argument("Invalid matrix operator");
+            }
+            data[0] = value;
+            return Loader(*this,1);
+        }
+
         void print() const {
             if(data_rows==-1){
                 for(int j = 0; j < data_cols; j++) {
@@ -90,8 +107,7 @@ namespace internal {
             }
         }
 
-        bool isDynamic(int rows,int cols) const 
-        { 
+        bool isDynamic(int rows,int cols) const { 
             if(rows==-1 && cols==-1) 
             {
                 return true;
@@ -148,15 +164,12 @@ namespace internal {
     EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 2) \
     EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 3) \
     EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 4)
-EIGEN_MAKE_TYPEDEFS_ALL_SIZES(int, i)
-EIGEN_MAKE_TYPEDEFS_ALL_SIZES(float, f)
-EIGEN_MAKE_TYPEDEFS_ALL_SIZES(double, d)
+    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(int, i)
+    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(float, f)
+    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(double, d)
 
 #undef EIGEN_MAKE_TYPEDEFS_ALL_SIZES
 #undef EIGEN_MAKE_TYPEDEFS
 #undef EIGEN_MAKE_FIXED_TYPEDEFS
 }
-
-
-
 #endif

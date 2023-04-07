@@ -33,10 +33,34 @@ TEST(Matrix, Vector) {
     b.print();
 }
 
-TEST(Matrix,Constructor_List_Fixed){
+TEST(Matrix,Constructor_List_Fixed) {
     Matrix2d a({{1,2},{3,4}});
     a.print();
 
     Matrix2d b {{1,2},{3,4}};
     b.print();
+
+    Matrix<int,2,3> c {{2, 3, 4},{5, 6, 7}};
+    c.print();
+
+    EXPECT_THROW((Matrix<int,2,4>({{2, 3, 4},{5, 6, 7}})) , std::invalid_argument);
+    EXPECT_THROW((Matrix2i({{2, 3, 4},{5, 6, 7}})) , std::invalid_argument);
+    EXPECT_THROW((Matrix2i({{2, 3},{5, 6, 7}})) , std::invalid_argument);
+}
+
+TEST(Matrix,Constructor_List_Dynamic) {
+    MatrixXi a({{1,2},{3,4}});
+    a.print();
+
+    MatrixXi b {{1,2},{3,4}};
+    b.print();
+    b.cols();
+
+    EXPECT_THROW((MatrixXi({{2, 3},{5, 6, 7}})) , std::invalid_argument);
+}
+
+TEST(Matrix,Comma_Init){
+    Matrix3i a;
+    a <<1,2,3,4,5,6,7,8,9,10;
+    a.print();
 }
