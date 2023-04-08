@@ -73,20 +73,11 @@ namespace internal {
 
         Matrix(std::initializer_list<std::initializer_list<_Scalar>> list) {
             int list_rows = list.size();
-            int list_cols = list.begin()->size();
+            int list_cols = checkListColumns(list);
+            
             setOption(_Rows, _Cols);
-            // Fixed
-            if(option==FIXED){
-                // Check Fixed Size == List Size
-                if(_Rows != list_rows || _Cols != list_cols){
-                    throw std::invalid_argument("Invalid List");
-                }
-                setDataByLists(_Rows, _Cols,list);
-            // ROW_Dynamic
-            }else if(option==ROW_DYNAMIC){
-                
-                setDataByLists(list_rows, list_cols,list);
-            }
+            checkListMat(list_rows, list_cols);
+            setDataByLists(list);
         }
 
         Matrix(const Matrix& other) {
@@ -124,6 +115,15 @@ namespace internal {
             }
             return os;
         }
+        // Arithmetic
+        Matrix friend operator+(const Matrix& lhs ,const Matrix&  other){
+            Matrix result;
+            for(int i=0; i < _Cols*_Rows; i++) {
+                result.data[i] = lhs.data[i]+other.data[i];
+            }
+            return result;
+        }
+
 
         void print() const {
             if(data_rows==-1){
@@ -162,22 +162,53 @@ namespace internal {
             return data_cols;
         }
 
-        void setDataByLists(int list_rows,int list_cols,std::initializer_list<std::initializer_list<_Scalar>>& list){
-            data_cols = list_cols;
-            data_rows = list_rows;
-            data.resize(data_cols * data_rows);
+        void setDataByLists(std::initializer_list<std::initializer_list<_Scalar>>& list){
             int i, j;
             i = j = 0;
             for(auto outer : list) {
-                if(outer.size() != data_cols){
-                    throw std::invalid_argument("Invalid matrix definition");
-                }
                 for(auto inner : outer) {
                     data[i*data_cols+j++] = inner;
                 }
                 j = 0;
                 i++;
             }
+        }
+        
+        int checkListColumns(const std::initializer_list<std::initializer_list<_Scalar>>& list) {
+            int expectedCols = list.begin()->size();
+            for (const auto& row : list) {
+                if (row.size() != expectedCols){
+                    throw std::invalid_argument("Invalid List");
+                }
+            }
+            return expectedCols; 
+        }
+
+        void checkListMat(const int list_rows, const int list_cols){
+            if(option==FIXED){
+                if(_Rows != list_rows || _Cols != list_cols){
+                    throw std::invalid_argument("Invalid List");
+                }
+                data_rows = _Rows;
+                data_cols = _Cols;
+
+            }else if(option==ROW_DYNAMIC){
+                if(_Cols != list_cols){
+                    throw std::invalid_argument("Invalid List");
+                }
+                data_cols = _Cols;
+                data_rows = list_rows;
+            }else if(option==COL_DYNAMIC){
+                if(_Rows != list_rows){
+                    throw std::invalid_argument("Invalid List");
+                }
+                data_cols = list_cols;
+                data_rows = _Rows;
+            }else{
+                data_cols = list_cols;
+                data_rows = list_rows;
+            }
+            data.resize(data_cols * data_rows);
         }
     private:
         std::vector<_Scalar> data;

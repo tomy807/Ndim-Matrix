@@ -21,17 +21,25 @@ TEST(Matrix, Constructor_Fixed) {
 }
 
 TEST(Matrix, Constructor_Dynamic) {
-    MatrixXf a(10,15);
-    VectorXf b(30);
+    MatrixXf a(3,4);
+    VectorXf b(3);
     a.print();
     b.print();
 }
 
 TEST(Matrix, Vector) {
-    VectorXf b(30);
+    VectorXf b(4);
+    b << 1,2,3;
     EXPECT_THROW(Vector3f c(4);, std::invalid_argument);
     b.print();
 }
+
+TEST(Matrix,RowVector){
+    RowVector3i a;
+    a << 1,2,3;
+    std::cout << a;
+}
+
 
 TEST(Matrix,Constructor_List_Fixed) {
     Matrix2d a({{1,2},{3,4}});
