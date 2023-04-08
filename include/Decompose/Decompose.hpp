@@ -1,6 +1,6 @@
 #ifndef DECOMPOSE_H
 #define DECOMPOSE_H
-#include "../Matrix/test_matrix.hpp"
+#include "../Matrix/Matrix.hpp"
 
 template<typename T>
 class Matrix;

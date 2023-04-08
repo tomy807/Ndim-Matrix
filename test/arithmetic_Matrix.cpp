@@ -33,7 +33,7 @@ TEST(Matrix_Arithemetic,Arithemetic_Dot){
 }
 
 TEST(Matrix_Arithemetic,Arithemetic_Dot_Exception){
-    Matrix<float,2,4> d;
+    Matrix<float,2,3> d;
     d << 1,1,1,1,1,1;
     Matrix<float,3,2> e;
     e << 1,1,1,1,1,1;

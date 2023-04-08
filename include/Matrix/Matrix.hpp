@@ -29,6 +29,7 @@ namespace internal {
                 return Loader(m, i+1);
             }
         };
+    public:
         // if Fixed: Assigned But Dynamic: Not Assigned
         Matrix() {
             if(setOption(_Rows, _Cols)==FIXED){
@@ -42,11 +43,11 @@ namespace internal {
         
         // Dynamic
         Matrix(const int rows,const int cols) {
+            assert(rows >= 0 && cols >= 0);
             setOption(_Rows, _Cols);
             if(option == FIXED){
                 throw std::invalid_argument("Invalid matrix definition");
             }
-            assert(rows >= 0 && cols >= 0);
             data_cols = cols;
             data_rows = rows;
             data.resize(data_cols * data_rows);
@@ -130,35 +131,9 @@ namespace internal {
             }
             return result;
         }
-
-        template<int Other_Rows, int Other_Cols>
-        friend Matrix<_Scalar,_Rows,Other_Cols> operator*(const Matrix<_Scalar,_Rows,_Cols>& lms,const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
-            if(lms.cols() != other.rows()){
-                throw std::invalid_argument("Invalid Matrix Operations");
-            }
-            Matrix<_Scalar,_Rows,Other_Cols> result;
-
-            	int r_numRows = other.rows();
-                int r_numCols = other.cols();
-                int l_numRows = lms.rows();
-                int l_numCols = lms.cols();
-
-            for (int lhsRow=0; lhsRow<l_numRows; lhsRow++){
-                for (int rhsCol=0; rhsCol<r_numCols; rhsCol++){
-                    _Scalar sum = static_cast<_Scalar>(0.0);
-                    for (int lhsCol=0; lhsCol<l_numCols; lhsCol++)
-                    {
-                        int lhsLinearIndex = lhsRow * l_numCols + lhsCol;
-                        int rhsLinearIndex = lhsCol * r_numCols + rhsCol;
-                        sum += lms.getElement(lhsLinearIndex) * other.getElement(rhsLinearIndex);
-                    }
-                    int resultLinearIndex = (lhsRow * r_numCols) + rhsCol;
-                    result.setElement(resultLinearIndex, sum);
-                }		
-		    }
-            return result;
-        }
-
+        
+        template<typename Scalar, int Rows, int Cols,int Other_Rows, int Other_Cols>
+        friend Matrix<Scalar,Rows,Other_Cols> operator*(const Matrix<Scalar,Rows,Cols>& leftMat,const Matrix<Scalar,Other_Rows,Other_Cols>& rightMat);
 
         void print() const {
             if(data_rows==-1){
@@ -284,5 +259,28 @@ const int Dynamic = -1;
 #undef EIGEN_MAKE_TYPEDEFS_ALL_SIZES
 #undef EIGEN_MAKE_TYPEDEFS
 #undef EIGEN_MAKE_FIXED_TYPEDEFS
+
+template<typename Scalar, int Rows, int Cols,int Other_Rows, int Other_Cols>
+Matrix<Scalar,Rows,Other_Cols> operator*(const Matrix<Scalar,Rows,Cols>& leftMat,const Matrix<Scalar,Other_Rows,Other_Cols>& rightMat){
+    if(leftMat.cols() != rightMat.rows()){
+        throw std::invalid_argument("Invalid Matrix Operations");
+    }
+    Matrix<Scalar,Rows,Other_Cols> result;
+
+        int rightCols = rightMat.cols();
+        int leftRows = leftMat.rows();
+        int leftCols = leftMat.cols();
+
+    for (int i=0; i<leftRows; i++){
+        for (int j=0; j<rightCols; j++){
+            Scalar sum = static_cast<Scalar>(0.0);
+            for (int k=0; k<leftCols; k++){
+                sum += leftMat.data[i * leftCols + k] * rightMat.data[k * rightCols + j];
+            }
+            result.setElement(i * rightCols + j, sum);
+        }
+    }
+    return result;
+}
 }
 #endif
