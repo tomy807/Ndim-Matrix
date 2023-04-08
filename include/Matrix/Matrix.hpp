@@ -1,5 +1,5 @@
-#ifndef TEST_TEMPLATE_MATRIX_2_H
-#define TEST_TEMPLATE_MATRIX_2_H
+#ifndef TEST_TEMPLATE_MATRIX_H
+#define TEST_TEMPLATE_MATRIX_H
 
 #include <vector>
 #include <iostream>
@@ -7,6 +7,16 @@
 #include <iostream>
 
 namespace internal {
+    enum Options{
+        //  -1 , -1
+        DYNAMIC,
+        // ROWS, -1 
+        COL_DYNAMIC,
+        // -1 COLS
+        ROW_DYNAMIC,
+        // ROWS, COLS
+        FIXED
+    };
     template<typename _Scalar, int _Rows, int _Cols>
     class Matrix {
     public:
@@ -21,7 +31,7 @@ namespace internal {
         };
         // if Fixed: Assigned But Dynamic: Not Assigned
         Matrix() {
-            if(!isDynamic(_Rows, _Cols)){
+            if(setOption(_Rows, _Cols)==FIXED){
                 data_cols = _Cols;
                 data_rows = _Rows;
                 data.resize(data_cols*data_rows);
@@ -30,9 +40,10 @@ namespace internal {
             }
         };
         
-        // if Fixed Not Assigned But Must Dynamic
+        // Dynamic
         Matrix(const int rows,const int cols) {
-            if(_Rows != -1 || _Cols != -1){
+            setOption(_Rows, _Cols);
+            if(option == FIXED){
                 throw std::invalid_argument("Invalid matrix definition");
             }
             assert(rows >= 0 && cols >= 0);
@@ -41,32 +52,39 @@ namespace internal {
             data.resize(data_cols * data_rows);
         };
 
-        // For Vector
-        Matrix(const int cols) {
-            std::cout << "cols: "<< _Cols << "rows: " << _Rows << std::endl;
-            if(_Rows != -1){
+        // ROW_Dynamic, COL_Dynamic
+        Matrix(const int row_or_col) {
+            assert(row_or_col >= 0);
+            setOption(_Rows, _Cols);
+            if(option==FIXED||option==DYNAMIC){
                 throw std::invalid_argument("Invalid matrix definition");
+            }else if(option==ROW_DYNAMIC){
+                data_cols = _Cols;
+                data_rows = row_or_col;
+            }else{
+                data_cols = row_or_col;
+                data_rows = _Rows;
             }
-            assert(cols >= 0);
-            data_cols = cols;
-            data.resize(data_cols);
-            for (int i = 0; i < data_cols; ++i)
+                data.resize(data_cols*data_rows);
+            for (int i = 0; i < data_cols*data_rows; ++i)
                     data[i] = 0;
+            
         };
 
         Matrix(std::initializer_list<std::initializer_list<_Scalar>> list) {
             int list_rows = list.size();
             int list_cols = list.begin()->size();
-            
+            setOption(_Rows, _Cols);
             // Fixed
-            if(_Rows != -1 || _Cols != -1){
+            if(option==FIXED){
                 // Check Fixed Size == List Size
                 if(_Rows != list_rows || _Cols != list_cols){
-                    throw std::invalid_argument("Invalid matrix definition");
+                    throw std::invalid_argument("Invalid List");
                 }
                 setDataByLists(_Rows, _Cols,list);
-            // Dynamic
-            }else{
+            // ROW_Dynamic
+            }else if(option==ROW_DYNAMIC){
+                
                 setDataByLists(list_rows, list_cols,list);
             }
         }
@@ -84,9 +102,6 @@ namespace internal {
         ~Matrix() {};
 
         Loader operator<<(_Scalar value) {
-            if(isDynamic(_Rows,_Cols)){
-                throw std::invalid_argument("Invalid matrix operator");
-            }
             data[0] = value;
             return Loader(*this,1);
         }
@@ -126,11 +141,17 @@ namespace internal {
             }
         }
 
-        bool isDynamic(int rows,int cols) const { 
-            if(rows==-1 && cols==-1) {
-                return true;
+        const Options setOption(int CompileRows,int CompileCols) { 
+            if(CompileRows==-1 && CompileCols==-1) {
+                option = DYNAMIC;
+            }else if(CompileRows!=-1 && CompileCols==-1) {
+                option = COL_DYNAMIC;
+            }else if(CompileRows==-1 && CompileCols!=-1) {
+                option = ROW_DYNAMIC;
+            }else{
+                option = FIXED;
             }
-            return false;
+            return option;
         }
 
         int rows() const{
@@ -162,6 +183,7 @@ namespace internal {
         std::vector<_Scalar> data;
         int data_cols=-1;
         int data_rows=-1;
+        Options option;
     };
 const int Dynamic = -1;
 

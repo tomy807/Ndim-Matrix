@@ -63,6 +63,9 @@ TEST(Matrix,Comma_Cin){
     Matrix3i a;
     a <<1,2,3,4,5,6,7,8,9,10;
     a.print();
+    MatrixXi b(2,3);
+    b <<1,2,3,4,5,6;
+    b.print();
 }
 
 TEST(Matrix,Cout){
