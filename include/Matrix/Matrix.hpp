@@ -116,11 +116,46 @@ namespace internal {
             return os;
         }
         // Arithmetic
-        Matrix friend operator+(const Matrix& lhs ,const Matrix&  other){
+        Matrix operator+(const Matrix&  other){
             Matrix result;
             for(int i=0; i < _Cols*_Rows; i++) {
-                result.data[i] = lhs.data[i]+other.data[i];
+                result.data[i] = data[i]+other.data[i];
             }
+            return result;
+        }
+        Matrix operator-(const Matrix& other){
+            Matrix result;
+            for(int i=0; i < _Cols*_Rows;i++){
+                result.data[i] = data[i]-other.data[i];
+            }
+            return result;
+        }
+
+        template<int Other_Rows, int Other_Cols>
+        friend Matrix<_Scalar,_Rows,Other_Cols> operator*(const Matrix<_Scalar,_Rows,_Cols>& lms,const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+            if(lms.cols() != other.rows()){
+                throw std::invalid_argument("Invalid Matrix Operations");
+            }
+            Matrix<_Scalar,_Rows,Other_Cols> result;
+
+            	int r_numRows = other.rows();
+                int r_numCols = other.cols();
+                int l_numRows = lms.rows();
+                int l_numCols = lms.cols();
+
+            for (int lhsRow=0; lhsRow<l_numRows; lhsRow++){
+                for (int rhsCol=0; rhsCol<r_numCols; rhsCol++){
+                    _Scalar sum = static_cast<_Scalar>(0.0);
+                    for (int lhsCol=0; lhsCol<l_numCols; lhsCol++)
+                    {
+                        int lhsLinearIndex = lhsRow * l_numCols + lhsCol;
+                        int rhsLinearIndex = lhsCol * r_numCols + rhsCol;
+                        sum += lms.getElement(lhsLinearIndex) * other.getElement(rhsLinearIndex);
+                    }
+                    int resultLinearIndex = (lhsRow * r_numCols) + rhsCol;
+                    result.setElement(resultLinearIndex, sum);
+                }		
+		    }
             return result;
         }
 
@@ -209,6 +244,13 @@ namespace internal {
                 data_rows = list_rows;
             }
             data.resize(data_cols * data_rows);
+        }
+
+        _Scalar getElement(int index) const{
+            return data[index];
+        }
+        void setElement(int index, _Scalar value){
+            data[index] = value;
         }
     private:
         std::vector<_Scalar> data;
