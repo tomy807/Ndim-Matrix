@@ -7,6 +7,7 @@
 #include <iostream>
 
 namespace internal {
+    const int Dynamic = -1;
     enum Options{
         //  -1 , -1
         DYNAMIC,
@@ -81,11 +82,6 @@ namespace internal {
             setDataByLists(list);
         }
 
-        Matrix(const Matrix& other) {
-            for (int i = 0; i < _Rows * _Cols; ++i)
-                data[i] = other.data[i];
-        };
-
         Matrix(const std::vector<_Scalar>& values) {
             assert(values.size() == _Rows * _Cols);
             for (int i = 0; i < _Rows * _Cols; ++i)
@@ -116,11 +112,19 @@ namespace internal {
             }
             return os;
         }
-        // Arithmetic
-        Matrix operator+(const Matrix&  other){
-            Matrix result;
-            for(int i=0; i < _Cols*_Rows; i++) {
-                result.data[i] = data[i]+other.data[i];
+
+        template<int Other_Rows, int Other_Cols>
+        Matrix<_Scalar,Dynamic,Dynamic> operator+(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
+            int lhsCols = cols();
+            int lhsRows = rows();
+            int rhsCols = other.cols();
+            int rhsRows = other.rows();
+            if(lhsCols != rhsCols && lhsRows != rhsRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            Matrix<_Scalar,Dynamic,Dynamic> result(rhsRows,rhsCols);
+            for(int i=0; i < lhsCols*lhsRows; i++) {
+                result.setElement(i,getElement(i)+other.getElement(i));
             }
             return result;
         }
@@ -132,9 +136,45 @@ namespace internal {
             return result;
         }
         
-        template<typename Scalar, int Rows, int Cols,int Other_Rows, int Other_Cols>
-        friend Matrix<Scalar,Rows,Other_Cols> operator*(const Matrix<Scalar,Rows,Cols>& leftMat,const Matrix<Scalar,Other_Rows,Other_Cols>& rightMat);
+        template<int Other_Rows, int Other_Cols>
+        Matrix<_Scalar,Dynamic,Dynamic> operator*(const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+            
+            const int leftRows = this->rows();
+            const int leftCols = this->cols();
+            const int rightRows = other.rows();
+            const int rightCols = other.cols();
+            if(leftCols != rightRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            Matrix<_Scalar,Dynamic,Dynamic> result(leftRows,rightCols);
 
+            for (int i=0; i<leftRows; i++){
+                for (int j=0; j<rightCols; j++){
+                    _Scalar sum = static_cast<_Scalar>(0.0);
+                    for (int k=0; k<leftCols; k++){
+                        sum += this->getElement(i * leftCols + k) * other.getElement(k * rightCols + j);
+                    }
+                    result.setElement(i * rightCols + j, sum);
+                }
+            }
+            return result;
+        }
+
+        template<int Other_Rows, int Other_Cols>
+        Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+            int lhsCols = cols();
+            int lhsRows = rows();
+            int rhsCols = other.cols();
+            int rhsRows = other.rows();
+            if(lhsCols != rhsCols && lhsRows != rhsRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            for(int i=0; i < lhsCols*lhsRows; i++) {
+                this->setElement(i,other.getElement(i)); 
+            }
+            return *this;
+        }
+        
         void print() const {
             if(data_rows==-1){
                 for(int j = 0; j < data_cols; j++) {
@@ -233,7 +273,6 @@ namespace internal {
         int data_rows=-1;
         Options option;
     };
-const int Dynamic = -1;
 
 #define EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \
     typedef Matrix<Type, Size, Size> Matrix##SizeSuffix##TypeSuffix; \
@@ -259,28 +298,5 @@ const int Dynamic = -1;
 #undef EIGEN_MAKE_TYPEDEFS_ALL_SIZES
 #undef EIGEN_MAKE_TYPEDEFS
 #undef EIGEN_MAKE_FIXED_TYPEDEFS
-
-template<typename Scalar, int Rows, int Cols,int Other_Rows, int Other_Cols>
-Matrix<Scalar,Rows,Other_Cols> operator*(const Matrix<Scalar,Rows,Cols>& leftMat,const Matrix<Scalar,Other_Rows,Other_Cols>& rightMat){
-    if(leftMat.cols() != rightMat.rows()){
-        throw std::invalid_argument("Invalid Matrix Operations");
-    }
-    Matrix<Scalar,Rows,Other_Cols> result;
-
-        int rightCols = rightMat.cols();
-        int leftRows = leftMat.rows();
-        int leftCols = leftMat.cols();
-
-    for (int i=0; i<leftRows; i++){
-        for (int j=0; j<rightCols; j++){
-            Scalar sum = static_cast<Scalar>(0.0);
-            for (int k=0; k<leftCols; k++){
-                sum += leftMat.data[i * leftCols + k] * rightMat.data[k * rightCols + j];
-            }
-            result.setElement(i * rightCols + j, sum);
-        }
-    }
-    return result;
-}
 }
 #endif
