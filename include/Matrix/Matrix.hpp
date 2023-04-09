@@ -31,7 +31,7 @@ namespace internal {
             }
         };
     public:
-        // if Fixed: Assigned But Dynamic: Not Assigned
+        // Fixed
         Matrix() {
             if(setOption(_Rows, _Cols)==FIXED){
                 data_cols = _Cols;
@@ -87,6 +87,7 @@ namespace internal {
             for (int i = 0; i < _Rows * _Cols; ++i)
                 data[i] = values[i];
         };
+
         ~Matrix() {};
 
         Loader operator<<(_Scalar value) {
@@ -128,10 +129,19 @@ namespace internal {
             }
             return result;
         }
-        Matrix operator-(const Matrix& other){
-            Matrix result;
-            for(int i=0; i < _Cols*_Rows;i++){
-                result.data[i] = data[i]-other.data[i];
+
+        template<int Other_Rows, int Other_Cols>
+        Matrix<_Scalar,Dynamic,Dynamic> operator-(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
+            int lhsCols = cols();
+            int lhsRows = rows();
+            int rhsCols = other.cols();
+            int rhsRows = other.rows();
+            if(lhsCols != rhsCols && lhsRows != rhsRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            Matrix<_Scalar,Dynamic,Dynamic> result(rhsRows,rhsCols);
+            for(int i=0; i < lhsCols*lhsRows; i++) {
+                result.setElement(i,getElement(i)-other.getElement(i));
             }
             return result;
         }
@@ -204,11 +214,11 @@ namespace internal {
             return option;
         }
 
-        int rows() const{
+        const int rows() const{
             return data_rows;
         }
 
-        int cols() const{
+        const int cols() const{
             return data_cols;
         }
 
@@ -261,7 +271,7 @@ namespace internal {
             data.resize(data_cols * data_rows);
         }
 
-        _Scalar getElement(int index) const{
+        _Scalar getElement(const int index) const{
             return data[index];
         }
         void setElement(int index, _Scalar value){
