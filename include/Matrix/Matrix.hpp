@@ -184,22 +184,6 @@ namespace internal {
             return *this;
         }
         
-        void print() const {
-            if(data_rows==-1){
-                for(int j = 0; j < data_cols; j++) {
-                    std::cout << data[j] << " ";
-                }
-                std::cout << "\n";
-            }else{
-                for(int i = 0; i < data_rows; i++) {
-                    for(int j = 0; j < data_cols; j++) {
-                        std::cout << data[i*data_cols + j] << " ";
-                    }
-                    std::cout << "\n";
-                }
-            }
-        }
-
         // Matrix<_Scalar,_Cols,_Rows> transpose(){
 
         template<uint blockRows,uint blockCols>
