@@ -30,7 +30,6 @@ namespace internal {
                 return Loader(m, i+1);
             }
         };
-    public:
         // Fixed
         Matrix() {
             if(setOption(_Rows, _Cols)==FIXED){
@@ -201,6 +200,39 @@ namespace internal {
             }
         }
 
+        // Matrix<_Scalar,_Cols,_Rows> transpose(){
+
+        template<uint blockRows,uint blockCols>
+        Matrix<_Scalar,blockRows,blockCols> block(const uint startRow,const uint startCol){
+            if(startRow+blockRows>rows() || startCol+blockCols>cols()){
+                throw std::invalid_argument("Invalid Block size");
+            }
+            Matrix<_Scalar,blockRows,blockCols> result;
+            int index = 0;
+            for (int i = startRow;i<startRow+blockRows;i++){
+                for (int j = startCol; j<startCol+blockCols;j++){
+                    result.setElement(index,getElement(i,j));
+                    index++;
+                }
+            }
+            return result; 
+        }
+
+        Matrix<_Scalar,Dynamic,Dynamic> block(const int startRow,const int startCol,const int blockRow,const int blockCol){
+            if(startRow+blockRow>rows() || startCol+blockCol>cols()){
+                throw std::invalid_argument("Invalid Block size");
+            }
+            Matrix<_Scalar,Dynamic,Dynamic> result(blockRow,blockCol);
+            int index = 0;
+            for (int i = startRow;i<startRow+blockRow;i++){
+                for (int j = startCol; j<startCol+blockCol;j++){
+                    result.setElement(index,getElement(i,j));
+                    index++;
+                }
+            }
+            return result; 
+        }
+
         const Options setOption(int CompileRows,int CompileCols) { 
             if(CompileRows==-1 && CompileCols==-1) {
                 option = DYNAMIC;
@@ -273,6 +305,9 @@ namespace internal {
 
         _Scalar getElement(const int index) const{
             return data[index];
+        }
+        _Scalar getElement(const int row, const int col) const{
+            return data[row*data_cols+col];
         }
         void setElement(int index, _Scalar value){
             data[index] = value;
