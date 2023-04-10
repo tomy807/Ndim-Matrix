@@ -36,8 +36,6 @@ namespace internal {
                 data_cols = _Cols;
                 data_rows = _Rows;
                 data.resize(data_cols*data_rows);
-                for (int i = 0; i < data_cols * data_rows; ++i)
-                    data[i] = 0;
             }
         };
         
@@ -67,9 +65,6 @@ namespace internal {
                 data_rows = _Rows;
             }
                 data.resize(data_cols*data_rows);
-            for (int i = 0; i < data_cols*data_rows; ++i)
-                    data[i] = 0;
-            
         };
 
         Matrix(std::initializer_list<std::initializer_list<_Scalar>> list) {
@@ -238,6 +233,69 @@ namespace internal {
             return data_cols;
         }
 
+        const _Scalar sum() const {
+            _Scalar sum = static_cast<_Scalar>(0.0);
+            if(data.empty()){
+                return sum;
+            }
+            for(auto i: data){
+                sum+=i;
+            }
+            return sum;
+        }
+
+        const _Scalar prod() const {
+            _Scalar prod = static_cast<_Scalar>(1.0);
+            if(data.empty()){
+                return prod;
+            }
+            for(auto i: data){
+                prod*=i;
+            }
+            return prod;
+        }
+
+        const _Scalar mean() const {
+            if(data.empty()){
+                return static_cast<_Scalar>(0.0);
+            }
+            return sum()/size();
+        }
+
+        const _Scalar minCoeff() const {
+            _Scalar min_val = data[0];
+            for(auto i: data){
+                if(i<min_val){
+                    min_val=i;
+                }
+            }
+            return min_val;
+        }
+
+        _Scalar maxCoeff() const {
+            _Scalar max_val = data[0];
+            for(auto i: data){
+                if(i>max_val){
+                    max_val=i;
+                }
+            }
+            return max_val;
+        }
+
+        _Scalar trace() const {
+            if(data_cols != data_rows){
+                throw std::invalid_argument("Invalid Trace Matrix");
+            }
+            _Scalar trace = static_cast<_Scalar>(0.0);
+            if(data.empty()){
+                return trace;
+            }
+            for (int i = 0; i < data_rows; i++){
+                trace += getElement(i,i);
+            }
+            return trace;
+            
+        }
         void setDataByLists(std::initializer_list<std::initializer_list<_Scalar>>& list){
             int i, j;
             i = j = 0;
@@ -290,9 +348,15 @@ namespace internal {
         _Scalar getElement(const int index) const{
             return data[index];
         }
+        
         _Scalar getElement(const int row, const int col) const{
             return data[row*data_cols+col];
         }
+        
+        int size() const { 
+            return data.size();
+        }
+
         void setElement(int index, _Scalar value){
             data[index] = value;
         }
@@ -303,29 +367,29 @@ namespace internal {
         Options option;
     };
 
-#define EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \
+#define MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \
     typedef Matrix<Type, Size, Size> Matrix##SizeSuffix##TypeSuffix; \
     typedef Matrix<Type, Size, 1> Vector##SizeSuffix##TypeSuffix; \
     typedef Matrix<Type, 1, Size> RowVector##SizeSuffix##TypeSuffix;
 
-#define EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, Size) \
+#define MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, Size) \
     typedef Matrix<Type, Size, Dynamic> Matrix##Size##X##TypeSuffix; \
     typedef Matrix<Type, Dynamic, Size> Matrix##X##Size##TypeSuffix;
 
-#define EIGEN_MAKE_TYPEDEFS_ALL_SIZES(Type, TypeSuffix) \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 2, 2) \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 3, 3) \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, 4, 4) \
-    EIGEN_MAKE_TYPEDEFS(Type, TypeSuffix, Dynamic, X) \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 2) \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 3) \
-    EIGEN_MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 4)
-    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(int, i)
-    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(float, f)
-    EIGEN_MAKE_TYPEDEFS_ALL_SIZES(double, d)
+#define MAKE_TYPEDEFS_ALL_SIZES(Type, TypeSuffix) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, 2, 2) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, 3, 3) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, 4, 4) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, Dynamic, X) \
+    MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 2) \
+    MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 3) \
+    MAKE_FIXED_TYPEDEFS(Type, TypeSuffix, 4)
+    MAKE_TYPEDEFS_ALL_SIZES(int, i)
+    MAKE_TYPEDEFS_ALL_SIZES(float, f)
+    MAKE_TYPEDEFS_ALL_SIZES(double, d)
 
-#undef EIGEN_MAKE_TYPEDEFS_ALL_SIZES
-#undef EIGEN_MAKE_TYPEDEFS
-#undef EIGEN_MAKE_FIXED_TYPEDEFS
+#undef MAKE_TYPEDEFS_ALL_SIZES
+#undef MAKE_TYPEDEFS
+#undef MAKE_FIXED_TYPEDEFS
 }
 #endif

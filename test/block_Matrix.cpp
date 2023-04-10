@@ -12,7 +12,6 @@ Matrix4f m;
        13,14,15,16;
   cout << "Block in the middle" << endl;
   cout << m.block<1,3>(1,1);
-
   cout << m.block(1,1,1,3);
 }
 

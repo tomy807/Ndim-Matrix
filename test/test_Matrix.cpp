@@ -8,30 +8,30 @@ TEST(Matrix, Constructor) {
     Matrix3f a;
     MatrixXf b;
     Matrix<int,7,5> c;
-    a.print();
-    b.print();
-    c.print();
+    std::cout << a;
+    std::cout << b;
+    std::cout << c;
 }
 TEST(Matrix, Constructor_Fixed) {
     EXPECT_THROW(Matrix3f a(10,15);, std::invalid_argument);
     Matrix3f b;
     EXPECT_EQ(b.rows(), 3);
     EXPECT_EQ(b.cols(), 3);
-    b.print();
+    std::cout << b;
 }
 
 TEST(Matrix, Constructor_Dynamic) {
     MatrixXf a(3,4);
     VectorXf b(3);
-    a.print();
-    b.print();
+    std::cout << a;
+    std::cout << b;
 }
 
 TEST(Matrix, Vector) {
     VectorXf b(4);
     b << 1,2,3;
     EXPECT_THROW(Vector3f c(4);, std::invalid_argument);
-    b.print();
+    std::cout << b;
 }
 
 TEST(Matrix,RowVector){
@@ -43,13 +43,13 @@ TEST(Matrix,RowVector){
 
 TEST(Matrix,Constructor_List_Fixed) {
     Matrix2d a({{1,2},{3,4}});
-    a.print();
+    std::cout << a;
 
     Matrix2d b {{1,2},{3,4}};
-    b.print();
+    std::cout << b;
 
     Matrix<int,2,3> c {{2, 3, 4},{5, 6, 7}};
-    c.print();
+    std::cout << c;
 
     EXPECT_THROW((Matrix<int,2,4>({{2, 3, 4},{5, 6, 7}})) , std::invalid_argument);
     EXPECT_THROW((Matrix2i({{2, 3, 4},{5, 6, 7}})) , std::invalid_argument);
@@ -58,10 +58,10 @@ TEST(Matrix,Constructor_List_Fixed) {
 
 TEST(Matrix,Constructor_List_Dynamic) {
     MatrixXi a({{1,2},{3,4}});
-    a.print();
+    std::cout << a;
 
     MatrixXi b {{1,2},{3,4}};
-    b.print();
+    std::cout << b;
     b.cols();
 
     EXPECT_THROW((MatrixXi({{2, 3},{5, 6, 7}})) , std::invalid_argument);
@@ -70,10 +70,10 @@ TEST(Matrix,Constructor_List_Dynamic) {
 TEST(Matrix,Comma_Cin){
     Matrix3i a;
     a <<1,2,3,4,5,6,7,8,9,10;
-    a.print();
+    std::cout << a;
     MatrixXi b(2,3);
     b <<1,2,3,4,5,6;
-    b.print();
+    std::cout << b;
 }
 
 TEST(Matrix,Cout){
