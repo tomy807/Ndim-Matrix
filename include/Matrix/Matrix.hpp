@@ -4,7 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <cassert>
-#include <iostream>
+#include <type_traits>
 
 namespace internal {
     const int Dynamic = -1;
@@ -81,6 +81,45 @@ namespace internal {
             for (int i = 0; i < _Rows * _Cols; ++i)
                 data[i] = values[i];
         };
+
+        // Fixed
+        static Matrix Random(){
+            if(_Rows == -1 || _Cols == -1){
+                throw std::invalid_argument("Invalid Matrix definition");
+            }
+            Matrix result;
+            if(std::is_same<_Scalar, int>::value){
+                for(int i=0; i<result.size(); ++i){
+                    result.setElement(i,rand());
+                }
+            }else{
+                for(int i=0; i<result.size(); ++i){
+                    result.setElement(i,-1+2*_Scalar(rand())/_Scalar(RAND_MAX));
+                }
+            }
+            return result;
+        };
+
+        static Matrix Random(int row_or_col) {
+            assert(row_or_col >= 0);
+            if(_Rows == -1 || _Cols == -1){
+                throw std::invalid_argument("Invalid Matrix definition");
+            }
+            Matrix result;
+            if(std::is_same<_Scalar, int>::value){
+                for(int i=0; i<result.size(); ++i){
+                    result.setElement(i,rand());
+                }
+            }else{
+                for(int i=0; i<result.size(); ++i){
+                    result.setElement(i,-1+2*_Scalar(rand())/_Scalar(RAND_MAX));
+                }
+            }
+            return result;
+        };
+
+        
+        
 
         ~Matrix() {};
 

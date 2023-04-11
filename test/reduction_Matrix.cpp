@@ -42,3 +42,4 @@ TEST(Reduction_Matrix,Trace){
     a << 1.1,2.2,3.3,4.5;
     std::cout << a.trace() << std::endl;
 }
+
