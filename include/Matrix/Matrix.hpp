@@ -82,6 +82,36 @@ namespace internal {
                 data[i] = values[i];
         };
 
+        template<class OtherMatrix>
+        Matrix(OtherMatrix& other) {
+            std::cout << "????" << std::endl;
+            data_cols = other.cols();
+            data_rows = other.rows();
+            data = other.getData();
+        }
+        
+        template<int Other_Rows, int Other_Cols>
+        Matrix(const Matrix<_Scalar,Other_Rows,Other_Cols>&& other){
+            std::cout << "Differnt Matrix" << std::endl;
+            data_cols = other.cols();
+            data_rows = other.rows();
+            data = other.getData();
+        }
+
+        Matrix(const Matrix& other){
+            std::cout << "Same Matrixes" << std::endl;
+            data_cols = other.cols();
+            data_rows = other.rows();
+            data = other.getData();
+        }
+
+        Matrix(Matrix&& other){
+            std::cout << "??Same Matrixes" << std::endl;
+            data_cols = other.cols();
+            data_rows = other.rows();
+            data = other.getData();
+        }
+
         // Fixed
         static Matrix Random(){
             if(_Rows == -1 || _Cols == -1){
@@ -118,9 +148,6 @@ namespace internal {
             return result;
         };
 
-        
-        
-
         ~Matrix() {};
 
         Loader operator<<(_Scalar value) {
@@ -148,7 +175,7 @@ namespace internal {
         }
 
         template<int Other_Rows, int Other_Cols>
-        Matrix<_Scalar,Dynamic,Dynamic> operator+(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
+        Matrix operator+(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
             int lhsCols = cols();
             int lhsRows = rows();
             int rhsCols = other.cols();
@@ -156,11 +183,24 @@ namespace internal {
             if(lhsCols != rhsCols && lhsRows != rhsRows){
                 throw std::invalid_argument("Invalid Matrix Operation");
             }
-            Matrix<_Scalar,Dynamic,Dynamic> result(rhsRows,rhsCols);
             for(int i=0; i < lhsCols*lhsRows; i++) {
-                result.setElement(i,getElement(i)+other.getElement(i));
+                setElement(i,getElement(i)+other.getElement(i));
             }
-            return result;
+            return *this;
+        }
+
+        Matrix operator+(const Matrix& other){
+            int lhsCols = cols();
+            int lhsRows = rows();
+            int rhsCols = other.cols();
+            int rhsRows = other.rows();
+            if(lhsCols != rhsCols && lhsRows != rhsRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            for(int i=0; i < lhsCols*lhsRows; i++) {
+                setElement(i,getElement(i)+other.getElement(i));
+            }
+            return *this;
         }
 
         template<int Other_Rows, int Other_Cols>
@@ -205,6 +245,24 @@ namespace internal {
 
         template<int Other_Rows, int Other_Cols>
         Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+            std::cout << "Operator Different =" << std::endl;
+            int lhsCols = cols();
+            int lhsRows = rows();
+            int rhsCols = other.cols();
+            int rhsRows = other.rows();
+            if(lhsCols != rhsCols && lhsRows != rhsRows){
+                throw std::invalid_argument("Invalid Matrix Operation");
+            }
+            std::cout << size() << std::endl;
+            std::cout << other.size() << std::endl;
+            for(int i=0; i < lhsCols*lhsRows; i++) {
+                this->setElement(i,other.getElement(i)); 
+            }
+            return *this;
+        }
+
+        Matrix operator=(const Matrix& other){
+            std::cout << "Operator Same =" << std::endl;
             int lhsCols = cols();
             int lhsRows = rows();
             int rhsCols = other.cols();
@@ -390,6 +448,9 @@ namespace internal {
         
         _Scalar getElement(const int row, const int col) const{
             return data[row*data_cols+col];
+        }
+        std::vector<_Scalar> getData() const{
+            return data;
         }
         
         int size() const { 

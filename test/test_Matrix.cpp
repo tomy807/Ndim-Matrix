@@ -81,3 +81,17 @@ TEST(Matrix,Cout){
     a <<1,2,3,4,5,6,7,8,9;
     std::cout << a;
 }
+
+TEST(Matrix,OtherConstruct){
+    MatrixXf a(2,2);
+    a <<1,2,3,4;
+    Matrix2f b(a);
+    std::cout << b;
+}
+
+TEST(Matrix,SameConstruct){
+    Matrix2d a;
+    a << 1,2,3,4;
+    Matrix2d b(a);
+    std::cout << b;
+}

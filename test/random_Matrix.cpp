@@ -4,7 +4,7 @@
 using namespace internal;
 using namespace std;
 TEST(Random_Matrix,Random_Fixed){
-    MatrixXd a = Matrix2d::Random();
+    Matrix2d a = Matrix2d::Random();
     std::cout << a << std::endl;
 
     Matrix2i b = Matrix2i::Random();

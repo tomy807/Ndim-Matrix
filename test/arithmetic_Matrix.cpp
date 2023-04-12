@@ -53,6 +53,8 @@ TEST(Matrix_Arithemetic,Dynamic_Dot){
     d = a*b;
     Matrix2i c;
     c = a*b;
+
+    Matrix2i e = a*b;
     std::cout << c << std::endl;
 }
 
