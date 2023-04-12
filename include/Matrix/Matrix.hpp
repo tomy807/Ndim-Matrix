@@ -84,7 +84,6 @@ namespace internal {
 
         template<class OtherMatrix>
         Matrix(OtherMatrix& other) {
-            std::cout << "????" << std::endl;
             data_cols = other.cols();
             data_rows = other.rows();
             data = other.getData();
@@ -92,21 +91,18 @@ namespace internal {
         
         template<int Other_Rows, int Other_Cols>
         Matrix(const Matrix<_Scalar,Other_Rows,Other_Cols>&& other){
-            std::cout << "Differnt Matrix" << std::endl;
             data_cols = other.cols();
             data_rows = other.rows();
             data = other.getData();
         }
 
         Matrix(const Matrix& other){
-            std::cout << "Same Matrixes" << std::endl;
             data_cols = other.cols();
             data_rows = other.rows();
             data = other.getData();
         }
 
         Matrix(Matrix&& other){
-            std::cout << "??Same Matrixes" << std::endl;
             data_cols = other.cols();
             data_rows = other.rows();
             data = other.getData();
