@@ -2,14 +2,26 @@
 N-dimensional Matrix like Eigen
 
 # matrix operations
-- reshape
-- block
+## Dynamic And Fixed Matrix
+Dynamic Matrix : MatrixX{i,f,d} \
+Resizable matrix\
+Fixed Matrix : Matrix{2,3,4}{i,f,d}\
+2x2, 3x3, 4x4 Size of Matrix\
+Semi Dynamic Matrix : Matrix{N}{X}{i,f,d}, Matrix{X}{N}{i,f,d}\
+Can Resize Row or Column
+#
+- std::cout << Matrix
+- std::ostream operator<< Matrix
+- operator +,*,- (if Size is Same, Dynamic <-> Fixed)
+- operator= (if Size is Same, Dynamic <-> Fixed)
 - row, col 
 - transpose
-- add, sub, mul 
+- add, sub, mul
+- block
 - reduction scalar assignment, addition, subtraction, multiplication, division
 
 # ToDoList
+- reshape
 - Inner product
 - Matrix multiplication
 - Outer product
