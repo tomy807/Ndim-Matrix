@@ -17,15 +17,15 @@ Can Resize Row or Column
 - row, col 
 - transpose
 - add, sub, mul
+- Matrix multiplication
 - block
 - reduction scalar assignment, addition, subtraction, multiplication, division
 
 # ToDoList
 - reshape
 - Inner product
-- Matrix multiplication
 - Outer product
-- LUP decomposition + Gaussian elimination
+- LU decomposition + Gaussian elimination
 - QR decomposition
 - Deteminant, Trace
 - Norm
