@@ -1,7 +1,7 @@
 # Ndim-Matrix
 N-dimensional Matrix like Eigen
 
-# Supporting matrix operations
+# matrix operations
 - reshape
 - block
 - row, col 
