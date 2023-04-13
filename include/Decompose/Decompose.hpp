@@ -2,18 +2,18 @@
 #define DECOMPOSE_H
 #include "../Matrix/Matrix.hpp"
 
-template<typename T>
+using namespace internal;
+template<typename _Scalar, int _Rows, int _Cols>
 class Matrix;
-
-template<typename T>
+template<typename _Scalar, int _Rows, int _Cols>
 class Decompose {
 public:
-    static void decomposeLU2(Matrix<T>& target ,Matrix<T>& L, Matrix<T>& U){
+    static void decomposeLU2(Matrix& target ,Matrix& L, Matrix& U){
         assert(target.rows() == target.cols());
         const int n = target.rows();
 
-        L = Matrix<T>(n, n);
-        U = Matrix<T>(n, n);
+        L = Matrix(n, n);
+        U = Matrix(n, n);
 
         for (int j = 0; j < n; j++) {
             U(0, j) =target(0, j);
