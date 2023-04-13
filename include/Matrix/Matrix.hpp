@@ -30,6 +30,11 @@ namespace internal {
                 return Loader(m, i+1);
             }
         };
+
+        Loader operator<<(_Scalar value) {
+            data[0] = value;
+            return Loader(*this,1);
+        }
         // Fixed
         Matrix() {
             if(setOption(_Rows, _Cols)==FIXED){
@@ -145,11 +150,6 @@ namespace internal {
         };
 
         ~Matrix() {};
-
-        Loader operator<<(_Scalar value) {
-            data[0] = value;
-            return Loader(*this,1);
-        }
 
         friend std::ostream& operator<<(std::ostream& os, const Matrix& m){
             int rows = m.rows();
@@ -270,6 +270,14 @@ namespace internal {
                 this->setElement(i,other.getElement(i)); 
             }
             return *this;
+        }
+
+        _Scalar operator()(int row, int col) const{
+            return data[row*data_cols+col];
+        }
+
+        _Scalar& operator()(int row, int col) {
+            return data[row*data_cols+col];
         }
         
         // Matrix<_Scalar,_Cols,_Rows> transpose(){

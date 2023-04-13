@@ -1,2 +1,2 @@
-add_library(matrix STATIC Matrix.cpp)
+add_library(matrix STATIC Matrix.cpp Decompose.cpp)
 target_include_directories(matrix PUBLIC ${CMAKE_SOURCE_DIR}/include)
