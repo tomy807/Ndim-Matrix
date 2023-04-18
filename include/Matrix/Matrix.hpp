@@ -1,12 +1,16 @@
-#ifndef TEST_TEMPLATE_MATRIX_H
-#define TEST_TEMPLATE_MATRIX_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #include <vector>
 #include <iostream>
 #include <cassert>
 #include <type_traits>
+// #include "Block.hpp"
 
 namespace internal {
+
+    // template <typename _Scalar,int blockRows,int blockCols> class Block;
+    
     const int Dynamic = -1;
     enum Options{
         //  -1 , -1
@@ -21,6 +25,90 @@ namespace internal {
     template<typename _Scalar, int _Rows, int _Cols>
     class Matrix {
     public:
+        template<int BlockRows,int BlockCols>
+        class Block {
+            public:
+            friend std::ostream& operator<<(std::ostream& os, const Block& block){
+                int startC = block.startCol_;
+                int startR = block.startRow_;
+
+                for(int i = startC; i < startC+block.blockCols_; i++) {
+                    for(int j = startR; j < startR+block.blockRows_; j++) {
+                        os << block.matrix->getElement(i,j)<< " ";
+                    }
+                    os << "\n";
+                }
+                return os;
+            }
+            Block(int startRow,int startCol,Matrix& result){
+                startRow_ = startRow;
+                startCol_ = startCol;
+                blockCols_ = BlockRows;
+                blockRows_ = BlockCols;
+                matrix = &result;
+            };
+
+            Block(int startRow,int startCol,int blockCols,int blockRows,Matrix& result){
+                if(BlockRows==-1 && BlockCols==-1){
+                    startRow_ = startRow;
+                    startCol_ = startCol;
+                    blockCols_ = blockRows;
+                    blockRows_ = blockCols;
+                    matrix = &result;
+                }else{
+                    throw std::invalid_argument("Invalid Block Definition");
+                }
+            }
+
+            template<int OtherRows, int OtherCols>
+            Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,OtherRows,OtherCols>& other){
+                std::cout << "Operator Different =" << std::endl;
+                int lhsCols = blockCols_;
+                int lhsRows = blockRows_;
+                int rhsCols = other.cols();
+                int rhsRows = other.rows();
+                if(lhsCols != rhsCols && lhsRows != rhsRows){
+                    throw std::invalid_argument("Invalid Matrix Operation");
+                }
+
+                for(int i=0; i < lhsCols;i++){
+                    for(int j= 0;j<lhsRows;j++){
+                        matrix->setElement(i+startCol_,j+startRow_,other.getElement(i,j));
+                    }
+                }
+                return *matrix;
+            }
+
+            template<int OtherRows, int OtherCols>
+            Matrix<_Scalar,_Rows,_Cols> operator=(const Block<OtherRows,OtherCols>& other){
+                int lhsCols = blockCols_;
+                int lhsRows = blockRows_;
+                int rhsCols = other.getBlockCols();
+                int rhsRows = other.getBlockRows();
+                if(lhsCols != rhsCols && lhsRows != rhsRows){
+                    throw std::invalid_argument("Invalid Matrix Operation");
+                }
+
+                for(int i=0; i < lhsCols;i++){
+                    for(int j= 0;j<lhsRows;j++){
+                        matrix->setElement(i+startCol_,j+startRow_,other.matrix.getElement(i,j));
+                    }
+                }
+                return *matrix;
+            }
+
+            ~Block(){}
+
+            int getBlockCols(){ return blockCols_; }
+            int getBlockRows(){ return blockRows_; }
+
+            private:
+                int startRow_;
+                int startCol_;
+                int blockCols_;
+                int blockRows_;
+                Matrix* matrix;
+        };
         struct Loader{
             Matrix& m;
             int i;
@@ -149,6 +237,17 @@ namespace internal {
             return result;
         };
 
+        static Matrix Constant(_Scalar value) {
+            if(_Rows == -1 || _Cols == -1){
+                throw std::invalid_argument("Invalid Matrix definition");
+            }
+            Matrix result;
+            for(int i=0; i<result.size(); ++i){
+                    result.setElement(i,value);
+            }
+            return result;
+        }
+
         ~Matrix() {};
 
         friend std::ostream& operator<<(std::ostream& os, const Matrix& m){
@@ -249,8 +348,6 @@ namespace internal {
             if(lhsCols != rhsCols && lhsRows != rhsRows){
                 throw std::invalid_argument("Invalid Matrix Operation");
             }
-            std::cout << size() << std::endl;
-            std::cout << other.size() << std::endl;
             for(int i=0; i < lhsCols*lhsRows; i++) {
                 this->setElement(i,other.getElement(i)); 
             }
@@ -282,36 +379,24 @@ namespace internal {
         
         // Matrix<_Scalar,_Cols,_Rows> transpose(){
 
-        template<uint blockRows,uint blockCols>
-        Matrix<_Scalar,blockRows,blockCols> block(const uint startRow,const uint startCol){
+        template<int blockRows,int blockCols>
+        Block<blockRows, blockCols> block(int startRow,int startCol){
             if(startRow+blockRows>rows() || startCol+blockCols>cols()){
                 throw std::invalid_argument("Invalid Block size");
             }
-            Matrix<_Scalar,blockRows,blockCols> result;
-            int index = 0;
-            for (int i = startRow;i<startRow+blockRows;i++){
-                for (int j = startCol; j<startCol+blockCols;j++){
-                    result.setElement(index,getElement(i,j));
-                    index++;
-                }
-            }
+            Block<blockRows,blockCols> result(startRow,startCol,*this);
             return result; 
         }
 
-        Matrix<_Scalar,Dynamic,Dynamic> block(const int startRow,const int startCol,const int blockRow,const int blockCol){
-            if(startRow+blockRow>rows() || startCol+blockCol>cols()){
+        // template<int blockRows,int blockCols>
+        Block<Dynamic, Dynamic> block(int startRow,int startCol,const int blockRows_,const int blockCols_){
+            if(startRow+blockRows_>rows() || startCol+blockCols_>cols()){
                 throw std::invalid_argument("Invalid Block size");
             }
-            Matrix<_Scalar,Dynamic,Dynamic> result(blockRow,blockCol);
-            int index = 0;
-            for (int i = startRow;i<startRow+blockRow;i++){
-                for (int j = startCol; j<startCol+blockCol;j++){
-                    result.setElement(index,getElement(i,j));
-                    index++;
-                }
-            }
+            Block<Dynamic,Dynamic> result(startRow,startCol,blockRows_,blockCols_,*this);
             return result; 
         }
+
 
         const Options setOption(int CompileRows,int CompileCols) { 
             if(CompileRows==-1 && CompileCols==-1) {
@@ -446,11 +531,15 @@ namespace internal {
             data.resize(data_cols * data_rows);
         }
 
-        _Scalar getElement(const int index) const{
+        const _Scalar getElement(const int index) const{
             return data[index];
         }
         
-        _Scalar getElement(const int row, const int col) const{
+        _Scalar& getElement(const int row, const int col){
+            return data[row*data_cols+col];
+        }
+
+        const _Scalar getElement(const int row, const int col) const{
             return data[row*data_cols+col];
         }
         std::vector<_Scalar> getData() const{
@@ -464,11 +553,16 @@ namespace internal {
         void setElement(int index, _Scalar value){
             data[index] = value;
         }
+
+        void setElement(const int row, const int col, _Scalar value) {
+            data[row*data_cols+col] = value;
+        }
     private:
         std::vector<_Scalar> data;
         int data_cols=-1;
         int data_rows=-1;
         Options option;
+        // Block block_;
     };
 
 #define MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \

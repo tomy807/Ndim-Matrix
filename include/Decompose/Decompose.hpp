@@ -17,32 +17,28 @@ public:
         for (int j = 0; j < n; j++) {
             U(0, j) =target(0, j);
         }
-        std::cout << "U" << std::endl;
-        std::cout << U <<std::endl;
         for (int i = 1; i < n; i++) {
             L(i, 0) = target(i, 0) / U(0, 0);
         }
-        std::cout << "L" << std::endl;
-        std::cout << L <<std::endl;
         for (int i = 0; i < n; i++) {
-                for (int j = i; j < n; j++) {
-                    _Scalar sum = 0;
-                    for (int k = 0; k < i; k++) {
-                        sum += L(i, k) * U(k, j);
-                    }
-                    U(i, j) = target(i, j) - sum;
+            for (int j = i; j < n; j++) {
+                _Scalar sum = 0;
+                for (int k = 0; k < i; k++) {
+                    sum += L(i, k) * U(k, j);
+                }
+                U(i, j) = target(i, j) - sum;
 
-                    if (j == i) {
-                        L(i, j) = 1;
-                    } else {
-                        sum = 0;
-                        for (int k = 0; k < i; k++) {
-                            sum += L(j, k) * U(k, i);
-                        }
-                        L(j, i) = (target(j, i) - sum) / U(i, i);
+                if (j == i) {
+                    L(i, j) = _Scalar(1);
+                } else {
+                    sum = 0;
+                    for (int k = 0; k < i; k++) {
+                        sum += L(j, k) * U(k, i);
                     }
+                    L(j, i) = (target(j, i) - sum) / U(i, i);
                 }
             }
+        }
     }
 };
 
