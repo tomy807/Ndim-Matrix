@@ -52,17 +52,18 @@ namespace internal {
                 if(BlockRows==-1 && BlockCols==-1){
                     startRow_ = startRow;
                     startCol_ = startCol;
-                    blockCols_ = blockRows;
-                    blockRows_ = blockCols;
+                    blockCols_ = blockCols;
+                    blockRows_ = blockRows;
                     matrix = &result;
                 }else{
                     throw std::invalid_argument("Invalid Block Definition");
                 }
             }
+            
+
 
             template<int OtherRows, int OtherCols>
             Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,OtherRows,OtherCols>& other){
-                std::cout << "Operator Different =" << std::endl;
                 int lhsCols = blockCols_;
                 int lhsRows = blockRows_;
                 int rhsCols = other.cols();
@@ -79,8 +80,8 @@ namespace internal {
                 return *matrix;
             }
 
-            template<int OtherRows, int OtherCols>
-            Matrix<_Scalar,_Rows,_Cols> operator=(const Block<OtherRows,OtherCols>& other){
+
+            Matrix operator= (const Block& other){
                 int lhsCols = blockCols_;
                 int lhsRows = blockRows_;
                 int rhsCols = other.getBlockCols();
@@ -91,7 +92,7 @@ namespace internal {
 
                 for(int i=0; i < lhsCols;i++){
                     for(int j= 0;j<lhsRows;j++){
-                        matrix->setElement(i+startCol_,j+startRow_,other.matrix.getElement(i,j));
+                        matrix->setElement(i+startCol_,j+startRow_,other.matrix->getElement(i+other.startRow_,j+other.startCol_));
                     }
                 }
                 return *matrix;
@@ -99,8 +100,8 @@ namespace internal {
 
             ~Block(){}
 
-            int getBlockCols(){ return blockCols_; }
-            int getBlockRows(){ return blockRows_; }
+            int getBlockCols() const { return blockCols_; }
+            int getBlockRows() const { return blockRows_; }
 
             private:
                 int startRow_;

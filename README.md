@@ -27,6 +27,7 @@ Can Resize Row or Column
 - Outer product
 - LU decomposition + Gaussian elimination
 - QR decomposition
+- Cholesky decomposition
 - Deteminant, Trace
 - Norm
 - Vector normalization
