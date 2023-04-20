@@ -1,6 +1,6 @@
 #ifndef DECOMPOSE_H
 #define DECOMPOSE_H
-#include "../Matrix/Matrix.hpp"
+#include "matrix/Matrix.hpp"
 
 using namespace internal;
 // template<typename _Scalar, int _Rows, int _Cols>
