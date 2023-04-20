@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
+
 #include "matrix/Matrix.hpp"
 
 using namespace internal;
 using namespace std;
-TEST(Random_Matrix,Random_Fixed){
+TEST(Random_Matrix, Random_Fixed) {
     Matrix2d a = Matrix2d::Random();
     std::cout << a << std::endl;
 

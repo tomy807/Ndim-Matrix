@@ -7,15 +7,16 @@ using namespace internal;
 // class Matrix;
 // template<typename _Scalar, int _Rows, int _Cols>
 class Decompose {
-public:
-
-    template<typename _Scalar, int _Rows, int _Cols>
-    static void decomposeLU(Matrix<_Scalar,_Rows,_Cols>& target ,Matrix<_Scalar,_Rows,_Cols>& L, Matrix<_Scalar,_Rows,_Cols>& U){
+   public:
+    template <typename _Scalar, int _Rows, int _Cols>
+    static void decomposeLU(Matrix<_Scalar, _Rows, _Cols> &target,
+                            Matrix<_Scalar, _Rows, _Cols> &L,
+                            Matrix<_Scalar, _Rows, _Cols> &U) {
         assert(target.rows() == target.cols());
         const int n = target.rows();
 
         for (int j = 0; j < n; j++) {
-            U(0, j) =target(0, j);
+            U(0, j) = target(0, j);
         }
         for (int i = 1; i < n; i++) {
             L(i, 0) = target(i, 0) / U(0, 0);
