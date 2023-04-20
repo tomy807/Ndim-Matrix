@@ -3,6 +3,7 @@ N-dimensional Matrix like Eigen
 
 # matrix operations
 ## Dynamic And Fixed Matrix
+- TODO: Split Dynamic and Fixed Class
 - Dynamic Matrix : MatrixX{i,f,d} \
 Resizable matrix
 - Fixed Matrix : Matrix{2,3,4}{i,f,d}\
