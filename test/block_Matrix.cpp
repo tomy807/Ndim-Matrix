@@ -36,6 +36,6 @@ TEST(Block_Matrix,rvalue){
   std::cout << "Here is the array a:\n" << a << "\n\n";
   a.block<2,2>(1,1) = m;
   std::cout << "Here is now a with m copied into its central 2x2 block:\n" << a << "\n\n";
-  a.block(0,0,2,2) = a.block(1,1,2,2);
-  std::cout << "Here is now a with bottom-right 2x3 block copied into top-left 2x3 block:\n" << a << "\n\n";
+  a.block(0,0,1,3) = a.block(1,0,1,3);
+  std::cout << "Here is now a with bottom-right 1x3 block copied into top-left 1x3 block:\n" << a << "\n\n";
 }

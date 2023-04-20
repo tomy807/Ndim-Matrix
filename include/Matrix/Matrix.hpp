@@ -5,13 +5,13 @@
 #include <iostream>
 #include <cassert>
 #include <type_traits>
-// #include "Block.hpp"
 
 namespace internal {
 
-    // template <typename _Scalar,int blockRows,int blockCols> class Block;
+    template <typename SCALAR,int BLOCKROWS,int BLOCKCOLS> class Block;
     
     const int Dynamic = -1;
+    // class Enum으로 바꾸기
     enum Options{
         //  -1 , -1
         DYNAMIC,
@@ -22,10 +22,10 @@ namespace internal {
         // ROWS, COLS
         FIXED
     };
-    template<typename _Scalar, int _Rows, int _Cols>
+    template<typename SCALAR, int ROWS, int COLS>
     class Matrix {
     public:
-        template<int BlockRows,int BlockCols>
+        template<int BLOCKROWS,int BLOCKCOLS>
         class Block {
             public:
             friend std::ostream& operator<<(std::ostream& os, const Block& block){
@@ -40,16 +40,17 @@ namespace internal {
                 }
                 return os;
             }
+
             Block(int startRow,int startCol,Matrix& result){
                 startRow_ = startRow;
                 startCol_ = startCol;
-                blockCols_ = BlockRows;
-                blockRows_ = BlockCols;
+                blockCols_ = BLOCKROWS;
+                blockRows_ = BLOCKCOLS;
                 matrix = &result;
             };
 
             Block(int startRow,int startCol,int blockCols,int blockRows,Matrix& result){
-                if(BlockRows==-1 && BlockCols==-1){
+                if(blockRows==-1 && blockCols==-1){
                     startRow_ = startRow;
                     startCol_ = startCol;
                     blockCols_ = blockCols;
@@ -59,11 +60,9 @@ namespace internal {
                     throw std::invalid_argument("Invalid Block Definition");
                 }
             }
-            
-
 
             template<int OtherRows, int OtherCols>
-            Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,OtherRows,OtherCols>& other){
+            Matrix<SCALAR,ROWS,COLS> operator=(const Matrix<SCALAR,OtherRows,OtherCols>& other){
                 int lhsCols = blockCols_;
                 int lhsRows = blockRows_;
                 int rhsCols = other.cols();
@@ -110,25 +109,26 @@ namespace internal {
                 int blockRows_;
                 Matrix* matrix;
         };
+
         struct Loader{
             Matrix& m;
             int i;
             Loader(Matrix& m, int i) : m(m), i(i) {}
-            Loader operator , (_Scalar x) {
+            Loader operator , (SCALAR x) {
                 m.data[i] = x;
                 return Loader(m, i+1);
             }
         };
 
-        Loader operator<<(_Scalar value) {
+        Loader operator<<(SCALAR value) {
             data[0] = value;
             return Loader(*this,1);
         }
         // Fixed
         Matrix() {
-            if(setOption(_Rows, _Cols)==FIXED){
-                data_cols = _Cols;
-                data_rows = _Rows;
+            if(setOption(ROWS, COLS)==FIXED){
+                data_cols = COLS;
+                data_rows = ROWS;
                 data.resize(data_cols*data_rows);
             }
         };
@@ -136,7 +136,7 @@ namespace internal {
         // Dynamic
         Matrix(const int rows,const int cols) {
             assert(rows >= 0 && cols >= 0);
-            setOption(_Rows, _Cols);
+            setOption(ROWS, COLS);
             if(option == FIXED){
                 throw std::invalid_argument("Invalid matrix definition");
             }
@@ -148,31 +148,31 @@ namespace internal {
         // ROW_Dynamic, COL_Dynamic
         Matrix(const int row_or_col) {
             assert(row_or_col >= 0);
-            setOption(_Rows, _Cols);
+            setOption(ROWS, COLS);
             if(option==FIXED||option==DYNAMIC){
                 throw std::invalid_argument("Invalid matrix definition");
             }else if(option==ROW_DYNAMIC){
-                data_cols = _Cols;
+                data_cols = COLS;
                 data_rows = row_or_col;
             }else{
                 data_cols = row_or_col;
-                data_rows = _Rows;
+                data_rows = ROWS;
             }
                 data.resize(data_cols*data_rows);
         };
 
-        Matrix(std::initializer_list<std::initializer_list<_Scalar>> list) {
+        Matrix(std::initializer_list<std::initializer_list<SCALAR>> list) {
             int list_rows = list.size();
             int list_cols = checkListColumns(list);
             
-            setOption(_Rows, _Cols);
+            setOption(ROWS, COLS);
             checkListMat(list_rows, list_cols);
             setDataByLists(list);
         }
 
-        Matrix(const std::vector<_Scalar>& values) {
-            assert(values.size() == _Rows * _Cols);
-            for (int i = 0; i < _Rows * _Cols; ++i)
+        Matrix(const std::vector<SCALAR>& values) {
+            assert(values.size() == ROWS * COLS);
+            for (int i = 0; i < ROWS * COLS; ++i)
                 data[i] = values[i];
         };
 
@@ -183,8 +183,8 @@ namespace internal {
             data = other.getData();
         }
         
-        template<int Other_Rows, int Other_Cols>
-        Matrix(const Matrix<_Scalar,Other_Rows,Other_Cols>&& other){
+        template<int OtherROWS, int OtherCOLS>
+        Matrix(const Matrix<SCALAR,OtherROWS,OtherCOLS>&& other){
             data_cols = other.cols();
             data_rows = other.rows();
             data = other.getData();
@@ -204,17 +204,17 @@ namespace internal {
 
         // Fixed
         static Matrix Random(){
-            if(_Rows == -1 || _Cols == -1){
+            if(ROWS == -1 || COLS == -1){
                 throw std::invalid_argument("Invalid Matrix definition");
             }
             Matrix result;
-            if(std::is_same<_Scalar, int>::value){
+            if(std::is_same<SCALAR, int>::value){
                 for(int i=0; i<result.size(); ++i){
                     result.setElement(i,rand());
                 }
             }else{
                 for(int i=0; i<result.size(); ++i){
-                    result.setElement(i,-1+2*_Scalar(rand())/_Scalar(RAND_MAX));
+                    result.setElement(i,SCALAR(-1)+SCALAR(2)*SCALAR(rand())/SCALAR(RAND_MAX));
                 }
             }
             return result;
@@ -222,24 +222,24 @@ namespace internal {
 
         static Matrix Random(int row_or_col) {
             assert(row_or_col >= 0);
-            if(_Rows == -1 || _Cols == -1){
+            if(ROWS == -1 || COLS == -1){
                 throw std::invalid_argument("Invalid Matrix definition");
             }
             Matrix result;
-            if(std::is_same<_Scalar, int>::value){
+            if(std::is_same<SCALAR, int>::value){
                 for(int i=0; i<result.size(); ++i){
                     result.setElement(i,rand());
                 }
             }else{
                 for(int i=0; i<result.size(); ++i){
-                    result.setElement(i,-1+2*_Scalar(rand())/_Scalar(RAND_MAX));
+                    result.setElement(i,-1+2*SCALAR(rand())/SCALAR(RAND_MAX));
                 }
             }
             return result;
         };
 
-        static Matrix Constant(_Scalar value) {
-            if(_Rows == -1 || _Cols == -1){
+        static Matrix Constant(SCALAR value) {
+            if(ROWS == -1 || COLS == -1){
                 throw std::invalid_argument("Invalid Matrix definition");
             }
             Matrix result;
@@ -270,8 +270,8 @@ namespace internal {
             return os;
         }
 
-        template<int Other_Rows, int Other_Cols>
-        Matrix operator+(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
+        template<int OtherROWS, int OtherCOLS>
+        Matrix operator+(const Matrix<SCALAR,OtherROWS,OtherCOLS>&  other){
             int lhsCols = cols();
             int lhsRows = rows();
             int rhsCols = other.cols();
@@ -299,8 +299,8 @@ namespace internal {
             return *this;
         }
 
-        template<int Other_Rows, int Other_Cols>
-        Matrix<_Scalar,Dynamic,Dynamic> operator-(const Matrix<_Scalar,Other_Rows,Other_Cols>&  other){
+        template<int OtherROWS, int OtherCOLS>
+        Matrix<SCALAR,Dynamic,Dynamic> operator-(const Matrix<SCALAR,OtherROWS,OtherCOLS>&  other){
             int lhsCols = cols();
             int lhsRows = rows();
             int rhsCols = other.cols();
@@ -308,15 +308,15 @@ namespace internal {
             if(lhsCols != rhsCols && lhsRows != rhsRows){
                 throw std::invalid_argument("Invalid Matrix Operation");
             }
-            Matrix<_Scalar,Dynamic,Dynamic> result(rhsRows,rhsCols);
+            Matrix<SCALAR,Dynamic,Dynamic> result(rhsRows,rhsCols);
             for(int i=0; i < lhsCols*lhsRows; i++) {
                 result.setElement(i,getElement(i)-other.getElement(i));
             }
             return result;
         }
         
-        template<int Other_Rows, int Other_Cols>
-        Matrix<_Scalar,Dynamic,Dynamic> operator*(const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+        template<int OtherROWS, int OtherCOLS>
+        Matrix<SCALAR,Dynamic,Dynamic> operator*(const Matrix<SCALAR,OtherROWS,OtherCOLS>& other){
             
             const int leftRows = this->rows();
             const int leftCols = this->cols();
@@ -325,11 +325,11 @@ namespace internal {
             if(leftCols != rightRows){
                 throw std::invalid_argument("Invalid Matrix Operation");
             }
-            Matrix<_Scalar,Dynamic,Dynamic> result(leftRows,rightCols);
+            Matrix<SCALAR,Dynamic,Dynamic> result(leftRows,rightCols);
 
             for (int i=0; i<leftRows; i++){
                 for (int j=0; j<rightCols; j++){
-                    _Scalar sum = static_cast<_Scalar>(0.0);
+                    SCALAR sum = static_cast<SCALAR>(0.0);
                     for (int k=0; k<leftCols; k++){
                         sum += this->getElement(i * leftCols + k) * other.getElement(k * rightCols + j);
                     }
@@ -339,8 +339,8 @@ namespace internal {
             return result;
         }
 
-        template<int Other_Rows, int Other_Cols>
-        Matrix<_Scalar,_Rows,_Cols> operator=(const Matrix<_Scalar,Other_Rows,Other_Cols>& other){
+        template<int OtherROWS, int OtherCOLS>
+        Matrix<SCALAR,ROWS,COLS> operator=(const Matrix<SCALAR,OtherROWS,OtherCOLS>& other){
             std::cout << "Operator Different =" << std::endl;
             int lhsCols = cols();
             int lhsRows = rows();
@@ -370,26 +370,26 @@ namespace internal {
             return *this;
         }
 
-        _Scalar operator()(int row, int col) const{
+        SCALAR operator()(int row, int col) const{
             return data[row*data_cols+col];
         }
 
-        _Scalar& operator()(int row, int col) {
+        SCALAR& operator()(int row, int col) {
             return data[row*data_cols+col];
         }
         
-        // Matrix<_Scalar,_Cols,_Rows> transpose(){
+        // Matrix<SCALAR,COLS,ROWS> transpose(){
 
-        template<int blockRows,int blockCols>
-        Block<blockRows, blockCols> block(int startRow,int startCol){
-            if(startRow+blockRows>rows() || startCol+blockCols>cols()){
+        template<int BLOCKROWS,int BLOCKCOLS>
+        Block<BLOCKROWS, BLOCKCOLS> block(int startRow,int startCol){
+            if(startRow+BLOCKROWS>rows() || startCol+BLOCKCOLS>cols()){
                 throw std::invalid_argument("Invalid Block size");
             }
-            Block<blockRows,blockCols> result(startRow,startCol,*this);
+            Block<BLOCKROWS,BLOCKCOLS> result(startRow,startCol,*this);
             return result; 
         }
 
-        // template<int blockRows,int blockCols>
+        // template<int BLOCKROWS,int BLOCKCOLS>
         Block<Dynamic, Dynamic> block(int startRow,int startCol,const int blockRows_,const int blockCols_){
             if(startRow+blockRows_>rows() || startCol+blockCols_>cols()){
                 throw std::invalid_argument("Invalid Block size");
@@ -397,7 +397,6 @@ namespace internal {
             Block<Dynamic,Dynamic> result(startRow,startCol,blockRows_,blockCols_,*this);
             return result; 
         }
-
 
         const Options setOption(int CompileRows,int CompileCols) { 
             if(CompileRows==-1 && CompileCols==-1) {
@@ -420,8 +419,8 @@ namespace internal {
             return data_cols;
         }
 
-        const _Scalar sum() const {
-            _Scalar sum = static_cast<_Scalar>(0.0);
+        const SCALAR sum() const {
+            SCALAR sum = static_cast<SCALAR>(0.0);
             if(data.empty()){
                 return sum;
             }
@@ -431,8 +430,8 @@ namespace internal {
             return sum;
         }
 
-        const _Scalar prod() const {
-            _Scalar prod = static_cast<_Scalar>(1.0);
+        const SCALAR prod() const {
+            SCALAR prod = static_cast<SCALAR>(1.0);
             if(data.empty()){
                 return prod;
             }
@@ -442,15 +441,15 @@ namespace internal {
             return prod;
         }
 
-        const _Scalar mean() const {
+        const SCALAR mean() const {
             if(data.empty()){
-                return static_cast<_Scalar>(0.0);
+                return static_cast<SCALAR>(0.0);
             }
             return sum()/size();
         }
 
-        const _Scalar minCoeff() const {
-            _Scalar min_val = data[0];
+        const SCALAR minCoeff() const {
+            SCALAR min_val = data[0];
             for(auto i: data){
                 if(i<min_val){
                     min_val=i;
@@ -459,8 +458,8 @@ namespace internal {
             return min_val;
         }
 
-        _Scalar maxCoeff() const {
-            _Scalar max_val = data[0];
+        SCALAR maxCoeff() const {
+            SCALAR max_val = data[0];
             for(auto i: data){
                 if(i>max_val){
                     max_val=i;
@@ -469,11 +468,11 @@ namespace internal {
             return max_val;
         }
 
-        _Scalar trace() const {
+        SCALAR trace() const {
             if(data_cols != data_rows){
                 throw std::invalid_argument("Invalid Trace Matrix");
             }
-            _Scalar trace = static_cast<_Scalar>(0.0);
+            SCALAR trace = static_cast<SCALAR>(0.0);
             if(data.empty()){
                 return trace;
             }
@@ -483,7 +482,8 @@ namespace internal {
             return trace;
             
         }
-        void setDataByLists(std::initializer_list<std::initializer_list<_Scalar>>& list){
+
+        void setDataByLists(std::initializer_list<std::initializer_list<SCALAR>>& list){
             int i, j;
             i = j = 0;
             for(auto outer : list) {
@@ -495,7 +495,7 @@ namespace internal {
             }
         }
         
-        int checkListColumns(const std::initializer_list<std::initializer_list<_Scalar>>& list) {
+        int checkListColumns(const std::initializer_list<std::initializer_list<SCALAR>>& list) {
             int expectedCols = list.begin()->size();
             for (const auto& row : list) {
                 if (row.size() != expectedCols){
@@ -507,24 +507,24 @@ namespace internal {
 
         void checkListMat(const int list_rows, const int list_cols){
             if(option==FIXED){
-                if(_Rows != list_rows || _Cols != list_cols){
+                if(ROWS != list_rows || COLS != list_cols){
                     throw std::invalid_argument("Invalid List");
                 }
-                data_rows = _Rows;
-                data_cols = _Cols;
+                data_rows = ROWS;
+                data_cols = COLS;
 
             }else if(option==ROW_DYNAMIC){
-                if(_Cols != list_cols){
+                if(COLS != list_cols){
                     throw std::invalid_argument("Invalid List");
                 }
-                data_cols = _Cols;
+                data_cols = COLS;
                 data_rows = list_rows;
             }else if(option==COL_DYNAMIC){
-                if(_Rows != list_rows){
+                if(ROWS != list_rows){
                     throw std::invalid_argument("Invalid List");
                 }
                 data_cols = list_cols;
-                data_rows = _Rows;
+                data_rows = ROWS;
             }else{
                 data_cols = list_cols;
                 data_rows = list_rows;
@@ -532,18 +532,18 @@ namespace internal {
             data.resize(data_cols * data_rows);
         }
 
-        const _Scalar getElement(const int index) const{
+        const SCALAR getElement(const int index) const{
             return data[index];
         }
         
-        _Scalar& getElement(const int row, const int col){
+        SCALAR& getElement(const int row, const int col){
             return data[row*data_cols+col];
         }
 
-        const _Scalar getElement(const int row, const int col) const{
+        const SCALAR getElement(const int row, const int col) const{
             return data[row*data_cols+col];
         }
-        std::vector<_Scalar> getData() const{
+        std::vector<SCALAR> getData() const{
             return data;
         }
         
@@ -551,19 +551,18 @@ namespace internal {
             return data.size();
         }
 
-        void setElement(int index, _Scalar value){
+        void setElement(int index, SCALAR value){
             data[index] = value;
         }
 
-        void setElement(const int row, const int col, _Scalar value) {
+        void setElement(const int row, const int col, SCALAR value) {
             data[row*data_cols+col] = value;
         }
     private:
-        std::vector<_Scalar> data;
+        std::vector<SCALAR> data;
         int data_cols=-1;
         int data_rows=-1;
         Options option;
-        // Block block_;
     };
 
 #define MAKE_TYPEDEFS(Type, TypeSuffix, Size, SizeSuffix) \
