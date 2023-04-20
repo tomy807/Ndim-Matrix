@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 project(ndim_matrix)
-set(CMAKE_CXX_STANDARD 17)
-add_subdirectory(src)
-add_subdirectory(test)
+set(CMAKE_CXX_STANDARD 14)
+find_package(Threads REQUIRED)
+add_subdirectory(modules)
