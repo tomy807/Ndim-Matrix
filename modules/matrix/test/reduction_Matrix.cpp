@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../include/Matrix/Matrix.hpp"
+#include "matrix/Matrix.hpp"
 #include <time.h>
 // clock_t start, finish;
 // double duration;

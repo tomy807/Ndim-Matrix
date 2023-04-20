@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <typeinfo>
-#include "../include/Matrix/Matrix.hpp"
+#include "matrix/Matrix.hpp"
 
 using namespace internal;
 
